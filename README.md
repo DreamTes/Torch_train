@@ -2,48 +2,57 @@
 
 # 深度学习基础
 
-## 线性模型 (Linear Model)
+## 损失函数 
 
-**1. 核心目标**
+(Cost Function / Loss Function)
 
-线性模型的目标是找到一个线性的、直线的函数关系，来描述输入特征 `X` 和输出标签 `y` 之间的关系。
+评价模型的预测值和真实值不一样的程度，用来衡量模型“犯错”程度的函数，即预测值与真实值之间的差距。
 
-**2. 假设函数 (Hypothesis Function)**
+**损失 (Loss)**: 通常指**单个样本**的误差。
 
-- **公式**:
+- **公式**:![image-20250629205806483](https://gitee.com/TChangQing/qing_images/raw/master/images/20250629205806515.png)
 
-  ![image-20250629205714017](https://gitee.com/TChangQing/qing_images/raw/master/images/20250629205714094.png)
+损失函数：
 
-- **参数说明**:
++ 评价模型性能，既预测结果和真实结果越接近性能越好。
++ 参数优化，通过计算损失函数，进行反向传播，不断更新参数。
 
-  - `X`: 输入特征 (e.g., 房屋面积)。
-  - `y'`: 模型的预测值 (e.g., 预测的房价)。
-  - `w`: **权重 (Weight)**，代表特征的重要性 (e.g., 每平米多少钱)。
-  - `b`: **偏置 (Bias)**，代表模型的基准线或偏移量 (e.g., 房屋的起步价)。
+### 均方差损失函数
 
-- **学习目标**: 找到最优的 `w` 和 `b`，使得模型的预测值 y′ 无限接近真实值 `y`。
+用于线性回归问题，计算预测值与真实值之间的平均平方差
 
-**3. 代价函数 (Cost Function / Loss Function)**
+**常用公式 (MSE - 均方误差)**:
 
-用来衡量模型“犯错”程度的函数，即预测值与真实值之间的差距。
+- $$
+  Cost(w,b) = \frac{1}{N} \sum_{i=1}^{N} \left(y_i' - y_i\right)^2 = \frac{1}{N} \sum_{i=1}^{N} \left(wx_i + b - y_i\right)^2
+  $$
 
-- **损失 (Loss)**: 通常指**单个样本**的误差。
+**核心思想**: **Cost 值越小，说明模型越好**。我们所有优化的目标，就是最小化这个 Cost。
 
-  - **公式**:![image-20250629205806483](https://gitee.com/TChangQing/qing_images/raw/master/images/20250629205806515.png)
+### 交叉熵损失函数
 
-- **代价 (Cost)**: 指**整个训练集**上所有样本的**平均误差**。
+**交叉熵是在分类任务中，衡量模型预测结果好坏的一种损失函数**。
 
-  - **常用公式 (MSE - 均方误差)**:
+它的核心思想是**衡量两个概率分布之间的差异**。 在机器学习中，这两个分布分别是：
 
-    ![image-20250629205744044](https://gitee.com/TChangQing/qing_images/raw/master/images/20250629205744085.png)
+1. **真实分布 (True Distribution)**: 这是正确答案的概率分布。在分类问题中，它是一个“one-hot”向量。例如，一个三分类问题（猫、狗、鸟），一张猫的图片其真实分布就是 `[1, 0, 0]`，表示“是猫的概率为100%，是狗的概率为0%，是鸟的概率为0%”。
+2. **预测分布 (Predicted Distribution)**: 这是你的模型经过计算后，输出的每个类别的预测概率。例如，模型可能预测这张图片是 `[0.7, 0.2, 0.1]`，表示“70%的可能是猫，20%是狗，10%是鸟”。
 
-- **核心思想**: **Cost 值越小，说明模型越好**。我们所有优化的目标，就是最小化这个 Cost。
+交叉熵损失函数的作用就是计算这两个分布之间的“距离”。**如果模型的预测分布与真实分布越接近，交叉熵损失就越小；反之，如果相差越大，损失就越大**。 我们的训练目标就是通过调整模型参数，来最小化这个交叉熵损失。
+
+![image-20250709102125104](https://gitee.com/TChangQing/qing_images/raw/master/images/20250709102125153.png)
+
+负号的作用是**将这个负的对数损失“扳正”**，变成一个**正数**，**抵消对数函数对(0,1]区间的概率值取对数后产生的负号**，从而将损失值转化为一个我们习惯于优化的、非负的、越小越好的正数。
+
+![image-20250709104104227](https://gitee.com/TChangQing/qing_images/raw/master/images/20250709104104292.png)
 
 
 
-## 梯度下降 (Gradient Descent)
+## 梯度下降 
 
 梯度下降是一种优化算法，用于寻找函数（在这里是代价函数）的最小值。
+
+![beab0e92-857d-4ad5-8313-5e7c6a4e8d33](https://gitee.com/TChangQing/qing_images/raw/master/images/20250810162646362.png)
 
 - **核心比喻 (下山)**:
   1. 站在山坡任意一点（随机初始化 `w` 和 `b`）。
@@ -82,30 +91,67 @@
 | **缺点**         | 计算开销大，慢         | 路径震荡，不稳定       | 需额外设置批大小                   |
 | **现状**         | 数据量大时基本不用     | 很少单独使用           | **现代深度学习的标配**             |
 
+## 激活函数
+
+**类似于大脑中的神经元：** 一个神经元会接收来自成百上千个其他神经元的电信号。它把这些信号全部加起来。但它不是简单地把这个总和再传下去。它有一个“**触发阈值**”。
+
+- 如果所有信号的总和非常微弱，低于这个阈值，这个神经元就**保持沉默**，什么也不做，我们说它“**未被激活**”。
+- 如果信号总和足够强，超过了阈值，这个神经元就会“**开火**”（Fire），产生一个强烈的电脉冲，传递给下游的神经元。我们说它“**被激活了**”。
+
+**神经网络中的激活函数：** 它扮演的就是这个“**触发机制**”或“**开关**”的角色。
+
+- 神经元先把所有输入 `x` 和对应的权重 `w` 相乘再求和，得到一个总的输入信号 `z = Σwᵢxᵢ + b`。
+
+- 然后，**激活函数**会接收这个总信号`z`，并“决定”这个神经元最终应该输出什么。它决定了神经元是否“开火”，以及“火力”有多猛。
+
+  > 目的是为了通过**在架构中强制加入非线性模块（激活函数）**，赋予了它塑造非线性关系的能力
+
+### Sigmoid
+
+![image-20250810151219841](https://gitee.com/TChangQing/qing_images/raw/master/images/20250810151219932.png)
+
+### Tanh
+
+![image-20250810151533195](https://gitee.com/TChangQing/qing_images/raw/master/images/20250810151533273.png)
+
+### ReLu
+
+![image-20250810151718818](https://gitee.com/TChangQing/qing_images/raw/master/images/20250810151718893.png)
+
+
+
 ## 反向传播
 
-## 逻辑回归
 
-### Sigmoid function
 
-![image-20250709101901889](https://gitee.com/TChangQing/qing_images/raw/master/images/20250709101901967.png)
+## 线性回归(线性模型)
 
-### 交叉熵损失函数
+**1. 核心目标**
 
-**交叉熵是在分类任务中，衡量模型预测结果好坏的一种损失函数**。
+线性模型的目标是找到一个线性的、直线的函数关系，来描述输入特征 `X` 和输出标签 `y` 之间的关系。
 
-它的核心思想是**衡量两个概率分布之间的差异**。 在机器学习中，这两个分布分别是：
+**2. 假设函数 (Hypothesis Function)**
 
-1. **真实分布 (True Distribution)**: 这是正确答案的概率分布。在分类问题中，它是一个“one-hot”向量。例如，一个三分类问题（猫、狗、鸟），一张猫的图片其真实分布就是 `[1, 0, 0]`，表示“是猫的概率为100%，是狗的概率为0%，是鸟的概率为0%”。
-2. **预测分布 (Predicted Distribution)**: 这是你的模型经过计算后，输出的每个类别的预测概率。例如，模型可能预测这张图片是 `[0.7, 0.2, 0.1]`，表示“70%的可能是猫，20%是狗，10%是鸟”。
+- **公式**:
 
-交叉熵损失函数的作用就是计算这两个分布之间的“距离”。**如果模型的预测分布与真实分布越接近，交叉熵损失就越小；反之，如果相差越大，损失就越大**。 我们的训练目标就是通过调整模型参数，来最小化这个交叉熵损失。
+  ![image-20250629205714017](https://gitee.com/TChangQing/qing_images/raw/master/images/20250629205714094.png)
 
-![image-20250709102125104](https://gitee.com/TChangQing/qing_images/raw/master/images/20250709102125153.png)
+- **参数说明**:
 
-负号的作用是**将这个负的对数损失“扳正”**，变成一个**正数**，**抵消对数函数对(0,1]区间的概率值取对数后产生的负号**，从而将损失值转化为一个我们习惯于优化的、非负的、越小越好的正数。
+  - `X`: 输入特征 (e.g., 房屋面积)。
+  - `y'`: 模型的预测值 (e.g., 预测的房价)。
+  - `w`: **权重 (Weight)**，代表特征的重要性 (e.g., 每平米多少钱)。
+  - `b`: **偏置 (Bias)**，代表模型的基准线或偏移量 (e.g., 房屋的起步价)。
 
-![image-20250709104104227](https://gitee.com/TChangQing/qing_images/raw/master/images/20250709104104292.png)
+- **学习目标**: 找到最优的 `w` 和 `b`，使得模型的预测值 y′ 无限接近真实值 `y`。
+
+## 逻辑回归(分类问题)
+
+**1. 核心目标**
+
+在线性回归模型的基础上，使用概率模型(如**Sigmoid函数**)，将线性模型的结果压缩到[0,1]之间，使其拥有概率意义，它可以将任意输入映射到[0,1]区间，实现值到概率转换
+
+
 
 ## 处理多维特征的输入
 
@@ -313,11 +359,11 @@ X_val_scaled = scaler.transform(X_val) # 注意：验证集只用transform
 
 神经网络的本质是**寻找非线性的空间变换函数**
 
+![image-20250808155144807](https://gitee.com/TChangQing/qing_images/raw/master/images/20250808155144890.png)
+
+
+
 # 卷积神经网络(CNN)
-
-## LeNet
-
-
 
 ![image-20250715115138518](https://gitee.com/TChangQing/qing_images/raw/master/images/20250715115138633.png)
 
@@ -325,162 +371,11 @@ X_val_scaled = scaler.transform(X_val) # 注意：验证集只用transform
 
 池化层
 
+
+
+LeNet
+
+AlexNet
+
 # 循环神经网络(RNN)
 
-
-
-# Pytorch基础
-
-标准流程
-
-![image-20250706105804830](https://gitee.com/TChangQing/qing_images/raw/master/images/20250706105804999.png)
-
-## **Pytorch实现线性回归**
-
-```python
-import torch
-
-# 反向传播示例：使用 PyTorch 实现简单的线性回归
-# 准备数据集
-x_data = torch.tensor([[1.0], [2.0], [3.0], [4.0], [5.0]])  # 调整输入形状为二维张量
-y_data = torch.tensor([[2.0], [4.0], [6.0], [8.0], [10.0]])  # 调整目标形状为二维张量
-
-w = torch.tensor([0.0], requires_grad=True)  # 初始化权重 requires_grad=True 表示需要计算梯度
-
-# 建立线性回归模型
-class LinearRegressionModel(torch.nn.Module):
-    def __init__(self):
-        super(LinearRegressionModel, self).__init__() # 初始化父类
-        self.linear = torch.nn.Linear(1, 1)  # 定义线性层
-
-    def forward(self, x):
-        return self.linear(x)
-# 实例化模型
-model = LinearRegressionModel() # 实例化模型
-
-criterion = torch.nn.MSELoss(reduction='mean')  # 定义损失函数
-
-optimizer = torch.optim.SGD(model.parameters(), lr=0.01)  # 定义优化器
-
-# 训练模型
-
-# 批量梯度下降法（Batch Gradient Descent）进行训练
-for epoch in range(100):
-    # 1. 前向传播：计算预测值
-    y_pred = model(x_data)  # 使用整个数据集进行前向传播
-
-    # 2. 计算损失
-    loss = criterion(y_pred, y_data)  # 使用整个数据集计算损失
-
-    print('Epoch [{}/100], Loss: {:.4f}'.format(epoch + 1, loss.item()))  # 打印每个epoch的损失
-
-    # 3. 反向传播：计算梯度
-    optimizer.zero_grad()  # 清零梯度
-    loss.backward()  # 反向传播
-
-    # 4. 更新权重
-    optimizer.step()  # 更新参数
-
-
-print('w =',model.linear.weight.item())# 打印最终的权重
-print('b =',model.linear.bias.item())  # 打印偏置
-
-x_test = torch.Tensor([[6.0]])  # 测试数据
-y_test = model(x_test)  # 预测
-print('预测值:', y_test.item())  # 打印预测结果
-```
-
-`x_data = torch.tensor([[1.0], [2.0], [3.0], [4.0], [5.0]])`
-
-+ 描述的是**5**个独立样本，每个样本只有一个特征
-
-`nn.Linear(in_features, out_features)`
-
-+ `in_features`: **输入特征数**。它描述的是**单个样本**有多少个特征，**与样本数量（批大小）完全无关**。
-+ `out_features`: **输出特征数**。它描述的是模型对**单个样本**会输出多少个数字。
-
-`torch.nn.MSELoss(reduction='mean')`
-
-+ `reduction='mean'` (默认): 计算平均损失。
-+ `reduction='sum'`: 计算损失总和。
-
-`torch.optim.SGD(model.parameters(), lr=0.01)` 
-
-+ 梯度下降算法
-+ `model.parameters()`自动遍历模型内部的所有参数
-
-## torch.tensor
-
-```python
-import torch
-
-# 创建一个0维张量 (标量)
-scalar = torch.tensor(5)
-print(f"标量: {scalar}, 形状: {scalar.shape}")
-
-# 创建一个1维张量 (向量)
-vector = torch.tensor([1.0, 2.0, 3.0])
-print(f"向量: {vector}, 形状: {vector.shape}")
-
-# 创建一个2维张量 (矩阵)
-matrix = torch.tensor([[1, 2, 3], [4, 5, 6]])
-print(f"矩阵:\n{matrix}\n形状: {matrix.shape}")
-```
-
-**`shape` (形状)**: 描述张量在每个维度上的大小。这是**最重要**的属性，能帮你理解数据的结构。例如，`torch.Size([2, 3])` 表示一个2行3列的矩阵。
-
-**深度学习中看到 `shape: [5, 1]` 时**
-
-- 这是一个2维张量（因为它有两个轴/维度：行和列）。
-- 第一个维度的大小是5，代表我们有5个样本。
-- 第二个维度的大小是1，代表每个样本有1个特征。
-
-`torch.tensor` 之所以成为深度学习的核心，它拥有 NumPy 两大能力：
-
-+ GPU加速张量可以被轻松地移动到GPU上进行计算，利用GPU成千上万个核心进行大规模并行运算
-+ 自动求导
-
-创建一个张量时，可以设置 `requires_grad=True`。 
-
-PyTorch 的 **Autograd** 引擎会开始追踪所有涉及到这个张量的计算，并在内存中构建一个**计算图**。基于这些计算最终得到一个标量损失 `loss` 并调用 `loss.backward()` 时，PyTorch 会沿着计算图反向传播，自动计算出 `loss` 相对于每一个设置了 `requires_grad=True` 的张量的梯度。计算出的梯度值会累加并存储在该张量的 `.grad` 属性
-
-`torch.tensor` 对象结构
-
-![image-20250705165147277](https://gitee.com/TChangQing/qing_images/raw/master/images/20250705165147314.png)
-
-`.data` 是一个指向该张量**底层存储的原始数值**的指针。它本身也是一个张量，与原张量共享同一块内存。你可以把它理解为张量的“肉身”，存放着具体的数字。
-
-`.grad` 是用来**存储和累加梯度**的地方。它也是一个张量，形状与原张量完全相同。
-
-一个完整的训练步骤：
-
-```python
-import torch
-
-# 1. 初始化: 创建一个需要学习的权重w
-w = torch.tensor([3.0], requires_grad=True)
-# 此时: w.data 是 tensor([3.0]), w.grad 是 None
-
-# 2. 前向传播: 计算loss
-x = torch.tensor([2.0])
-y_true = torch.tensor([10.0])
-y_pred = w * x
-loss = (y_pred - y_true) ** 2
-# 此时: w.data 仍然是 tensor([3.0]), w.grad 仍然是 None
-
-# 3. 反向传播: 计算梯度
-loss.backward()
-# loss = (2w - 10)^2, d(loss)/dw = 2 * (2w - 10) * 2 = 4 * (2*3 - 10) = -16
-# 此时: w.data 仍然是 tensor([3.0]), w.grad 被填充为 tensor([-16.0])
-
-# 4. 更新权重: 优化器使用 .grad 来更新 .data
-learning_rate = 0.01
-with torch.no_grad():
-    # 更新规则: w_new = w_old.data - lr * w_old.grad
-    w -= learning_rate * w.grad
-# 此时: w.data 被更新为 tensor([3.16]) (3.0 - 0.01 * -16), w.grad 仍然是 tensor([-16.0])
-
-# 5. 梯度清零: 为下一轮做准备
-w.grad.zero_()
-# 此时: w.data 是 tensor([3.16]), w.grad 被清空为 tensor([0.])
-```
